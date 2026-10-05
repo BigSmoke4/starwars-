@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beyond the Known</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Newsreader:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<style>
+:root{--void:#04060b;--star:#eaf0fa;--dim:#9fb0c8;--amber:#ffb454;--head:'Syncopate',sans-serif;--body:'Newsreader',Georgia,serif}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--void);color:var(--star);font-family:var(--body)}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+#flash{position:fixed;inset:0;background:#000;opacity:0;z-index:3;pointer-events:none}
+#loader{position:fixed;inset:0;z-index:10;background:var(--void);display:grid;place-content:center;gap:1rem;text-align:center;transition:opacity 1s}
+#loader b{font:700 .8rem var(--head);letter-spacing:.3em}#loader i{display:block;width:min(70vw,320px);height:2px;background:#1b2535;margin:auto}
+#loader i span{display:block;height:100%;width:0;background:var(--amber)}
+#loader small{color:var(--dim);font-size:1rem}
+.cin{position:relative;z-index:2}
+.beat{height:150vh}.beat.short{height:90vh}.beat.mid{height:130vh}
+.copy{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 14vh;max-width:46rem;opacity:0;pointer-events:none;text-shadow:0 2px 24px #000}
+.copy.center{max-width:none;justify-content:center;align-items:center;text-align:center;padding-bottom:0}
+.copy.right{margin-left:auto;text-align:right;align-items:flex-end}
+.copy.on{pointer-events:auto}
+.ch{font-size:1rem;color:var(--dim);margin-bottom:1.1rem}
+h2{font:700 clamp(1.5rem,4.3vw,3.7rem)/1.12 var(--head);margin-bottom:1.6rem;letter-spacing:-.01em}
+.copy.center h2{font-size:clamp(1.8rem,6.4vw,5.6rem)}
+.copy p{font-style:italic;font-weight:300;font-size:clamp(1.1rem,1.7vw,1.45rem);line-height:1.5;max-width:34rem}
+.copy.right p{margin-left:auto}
+.btn{margin-top:2rem;align-self:flex-start;background:none;color:var(--star);border:1px solid var(--star);padding:.95rem 1.5rem;font:700 .7rem var(--head);letter-spacing:.22em;cursor:pointer;transition:.25s}
+.btn:hover,.btn:focus-visible{background:var(--star);color:var(--void);outline:none}
+.sys{list-style:none;padding:0;margin:0 0 1.4rem;font:700 clamp(.75rem,1.3vw,1rem) var(--head);letter-spacing:.14em;max-width:32rem}
+.sys li{display:flex;justify-content:space-between;gap:2rem;padding:.7rem 0;border-bottom:1px solid #ffffff22;opacity:0;transform:translateX(-14px);transition:.5s}
+.sys li em{font-style:normal;color:var(--amber)}
+.on .sys li{opacity:1;transform:none}
+.on .sys li:nth-child(2){transition-delay:.25s}.on .sys li:nth-child(3){transition-delay:.5s}.on .sys li:nth-child(4){transition-delay:.75s}
+.dest{font:700 clamp(.8rem,1.5vw,1.1rem) var(--head);letter-spacing:.2em;color:var(--amber)}
+#final{position:relative;z-index:4;background:var(--void);min-height:100vh;padding:22vh 6vw 8vh;display:flex;flex-direction:column;justify-content:space-between;gap:12vh;box-shadow:0 -80px 120px 40px var(--void)}
+#final h2{font-size:clamp(1.8rem,5.5vw,5rem);max-width:16ch}
+#final p{font-style:italic;font-weight:300;font-size:clamp(1.15rem,1.9vw,1.6rem);line-height:1.55;max-width:36rem;color:#c9d5e8}
+#final .go{margin-top:3rem;display:inline-block;background:var(--amber);color:var(--void);padding:1.2rem 2rem;font:700 .8rem var(--head);letter-spacing:.2em;text-decoration:none}
+#final .go:focus-visible,#final .go:hover{background:var(--star);outline:none}
+#final footer{color:var(--dim);font-size:1rem;border-top:1px solid #ffffff1f;padding-top:1.4rem}
+#hud{position:fixed;left:12px;top:12px;z-index:9;font:12px monospace;color:var(--amber);background:#000a;padding:8px;display:none;white-space:pre}
+@media (max-width:640px){.copy{padding-bottom:10vh}}
+</style></head><body>
+<div id="loader"><b>PREPARING THE JOURNEY</b><small style="opacity:.6">build 8 · corridor colour</small><i><span id="bar"></span></i><small id="pct">0%</small></div>
+<canvas id="gl"></canvas><div id="flash"></div><pre id="hud"></pre>
+
+<main class="cin" id="cin">
+<section class="beat"><div class="copy"><div class="ch">01 — Before the Journey</div><h2>THE GALAXY HAS NO END.</h2><p>Beyond the light of distant worlds,<br>beyond the reach of ordinary travelers,<br>lies a place where stars become roads<br>and darkness becomes a destination.</p></div></section>
+<section class="beat"><div class="copy"><div class="ch">02 — The Ship Appears</div><h2>SOMETHING IS WAITING.</h2><p>A vessel built for the unknown.<br>Silent beneath the infinite sky.<br>Its engines sleep,<br>but the journey has already begun.</p><button class="btn" data-go="2">APPROACH</button></div></section>
+<section class="beat"><div class="copy right"><div class="ch">03 — Approaching the Ship</div><h2>LEAVE THE KNOWN BEHIND.</h2><p>The last traces of civilization disappear behind you.<br>Ahead lies nothing but starlight,<br>infinite space,<br>and a destination that does not exist on any map.</p></div></section>
+<section class="beat"><div class="copy"><div class="ch">04 — Entering the Ship</div><h2>WELCOME ABOARD.</h2><p>The stars are no longer above you.<br>They are everywhere.<br>The cockpit awakens.<br>Systems come online.<br>The engines begin to breathe.</p><button class="btn" data-go="4">INITIALIZE FLIGHT SYSTEMS</button></div></section>
+<section class="beat mid"><div class="copy"><div class="ch">05 — Inside the Cockpit</div><h2>ALL SYSTEMS ONLINE</h2><ul class="sys"><li>Navigation<em>READY</em></li><li>Engines<em>READY</em></li><li>Life Support<em>READY</em></li><li>Hyperdrive<em>READY</em></li></ul><div class="dest">DESTINATION: UNKNOWN</div></div></section>
+<section class="beat"><div class="copy right"><div class="ch">06 — The Galaxy Reveals Itself</div><h2>THERE ARE NO BORDERS HERE.</h2><p>Only worlds waiting to be discovered.<br>Ancient civilizations.<br>Forgotten planets.<br>Distant suns.<br>Worlds that have never seen a human traveler.</p></div></section>
+<section class="beat"><div class="copy"><div class="ch">07 — The Journey Begins</div><h2>THE FURTHER YOU TRAVEL, THE LESS YOU RECOGNIZE.</h2><p>Every star is a possibility.<br>Every planet holds a story.<br>Every unknown horizon hides something new.</p></div></section>
+<section class="beat short"><div class="copy center"><h2>BEYOND THE STARS.</h2></div></section>
+<section class="beat short"><div class="copy center"><h2>BEYOND THE KNOWN.</h2></div></section>
+<section class="beat short"><div class="copy center"><h2>BEYOND THE IMAGINABLE.</h2></div></section>
+<section class="beat short"><div class="copy center"><h2>THERE IS ALWAYS ANOTHER WORLD.</h2></div></section>
+<section class="beat"><div class="copy"><div class="ch">09 — The Discovery</div><h2>WE HAVE ARRIVED.</h2><p>A world untouched by the maps of the old galaxy.<br>Its skies are unfamiliar.<br>Its history is unknown.<br>And yet...<br>somehow,<br>it feels like we've been here before.</p></div></section>
+</main>
+
+<section id="final"><div><h2>THE JOURNEY DOESN'T END HERE.</h2><p style="margin-top:1rem">The galaxy is vast.<br>There are worlds beyond this one,<br>stories beyond this journey,<br>and mysteries still waiting in the dark.</p><p style="margin-top:2rem;color:var(--star)">KEEP EXPLORING.</p><a class="go" href="#">ENTER THE UNKNOWN →</a></div><footer>10 — Final Section. Replace this page with your real website content.</footer></section>
+
+<script>
+(function(){var p=document.getElementById('pct');function say(m){if(p){p.style.color='#ffb454';p.style.maxWidth='34rem';p.textContent=m}}
+if(location.protocol==='file:')say('Opened as a file. Run "python3 -m http.server 8000" in this folder and open http://localhost:8000');
+window.addEventListener('error',function(e){say('Error: '+(e.message||'script failed')+' (check browser console, F12)')});
+window.addEventListener('unhandledrejection',function(e){say('Error: '+(e.reason&&e.reason.message||e.reason))});
+setTimeout(function(){if(window.__started!==1&&location.protocol!=='file:')say('Three.js did not load from the CDN. Check your internet / VPN, then reload.')},8000);
+})();</script>
+<script type="module">
+window.__started=1;console.log('Star site build 8');
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+/* ---- TUNING (press T on the page to adjust live, then paste values here) ---- */
+const CFG={shipYaw:Math.PI,shipLen:5,rear:[0,0.4,2.6],canopy:[0,0.45,-0.3],cockpitYaw:Math.PI/2,cockpitLen:2.4,eye:[-0.3,0.97,0],corridorRev:false,corridorEye:0.4,enter:[0,0.18,0.9],enterLen:0.8};
+
+const $=s=>document.querySelector(s),clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const sm=(a,b,x)=>{x=clamp((x-a)/(b-a));return x*x*(3-2*x)};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer=new THREE.WebGLRenderer({canvas:$('#gl'),antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(60,1,0.03,4000);scene.add(cam);
+const hemi=new THREE.HemisphereLight(0x9fb8ff,0x2a1a10,1.1);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xfff0dd,2.6);key.position.set(5,6,-4);scene.add(key);
+const rim=new THREE.DirectionalLight(0x4f7bff,1.6);rim.position.set(-6,2,6);scene.add(rim);
+
+scene.environment=new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(),.04).texture;
+/* loading */
+const prog={};const upd=()=>{const v=Object.values(prog);const l=v.reduce((a,b)=>a+b[0],0),t=v.reduce((a,b)=>a+b[1],0);const p=t?Math.round(l/t*100):0;$('#bar').style.width=p+'%';$('#pct').textContent=p+'%'};
+const loader=new GLTFLoader();
+const SIZE={galaxy:19e6,ship:64e6,cockpit:48e6,transition:14e6};
+const load=n=>new Promise((res,rej)=>loader.load(n+'.glb',g=>{prog[n]=[1,1];res(g)},e=>{prog[n]=[e.loaded,e.total||Math.max(e.loaded,SIZE[n])];upd()},()=>rej(new Error('Could not load '+n+'.glb - keep index.html in the same folder as galaxy.glb, ship.glb, cockpit.glb and transition.glb, and open it through the local server.'))));
+const G=await Promise.all([load('galaxy'),load('ship'),load('cockpit'),load('transition')]);
+const [galaxy,ship,cockpit,trans]=G.map(g=>g.scene);
+
+/* galaxy skydome */
+const box=o=>new THREE.Box3().setFromObject(o);
+const gR=box(galaxy).getBoundingSphere(new THREE.Sphere()).radius;
+galaxy.scale.setScalar(1800/gR);galaxy.position.set(0,0,0);
+galaxy.traverse(o=>{if(o.material){o.material.side=THREE.DoubleSide;o.material.depthWrite=false;o.material.toneMapped=false;o.material.envMapIntensity=0;o.material.fog=false}o.frustumCulled=false});
+const dome=new THREE.Group();dome.add(galaxy);scene.add(dome);
+
+/* normalise a model: centre xz, base at y=0, scale longest side to len, yaw about pivot */
+function prep(m,len,yaw){const b=box(m),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());
+ const k=len/Math.max(s.x,s.z);m.scale.multiplyScalar(k);m.position.set(-c.x*k,-b.min.y*k,-c.z*k);
+ m.traverse(o=>{if(o.material){o.material.side=THREE.DoubleSide}});
+ const g=new THREE.Group();g.add(m);g.rotation.y=yaw;const w=new THREE.Group();w.add(g);return {w,g}}
+const S=new THREE.Vector3(...CFG.canopy),R=new THREE.Vector3(...CFG.rear);
+const sh=prep(ship,CFG.shipLen,CFG.shipYaw);scene.add(sh.w);
+const ck=prep(cockpit,CFG.cockpitLen,CFG.cockpitYaw);scene.add(ck.w);
+function placeCockpit(){ck.g.rotation.y=CFG.cockpitYaw;sh.g.rotation.y=CFG.shipYaw;
+ const e=new THREE.Vector3(...CFG.eye).applyEuler(new THREE.Euler(0,CFG.cockpitYaw,0));ck.w.position.copy(S).sub(e)}
+placeCockpit();
+sh.g.traverse(o=>{o.frustumCulled=false});
+const mixer=new THREE.AnimationMixer(ship);G[1].animations.forEach(c=>mixer.clipAction(c).play());
+/* corridor: model is Z-up, ~600 long along X. Scaled to ship size, laid along -Z, start point at world origin */
+const tout=new THREE.Group();tout.add(trans);scene.add(tout);
+trans.traverse(o=>{o.frustumCulled=false});
+const cA=new THREE.Vector3(),cB=new THREE.Vector3();
+function placeCorridor(){tout.updateMatrixWorld(true);const bx=new THREE.Box3().setFromObject(trans),sz=bx.getSize(new THREE.Vector3()),c=bx.getCenter(new THREE.Vector3());
+ const ax=sz.x>=sz.z?'x':'z',oth=ax==='x'?'z':'x',y=bx.min.y+sz.y*CFG.corridorEye,lo=bx.min[ax]+sz[ax]*.02,hi=bx.max[ax]-sz[ax]*.02;
+ cA.set(0,y,0);cB.set(0,y,0);cA[oth]=cB[oth]=c[oth];cA[ax]=CFG.corridorRev?lo:hi;cB[ax]=CFG.corridorRev?hi:lo;
+ console.log('corridor size',sz.toArray().map(v=>+v.toFixed(2)),'path',cA.toArray().map(v=>+v.toFixed(2)),'->',cB.toArray().map(v=>+v.toFixed(2)))}
+placeCorridor();
+/* corridor materials are metallic with no emissive light: add reflections + lift metalness so the tunnel is visible */
+trans.traverse(o=>{if(o.isMesh)[].concat(o.material).forEach(m=>{m.side=THREE.DoubleSide;m.envMapIntensity=.45;if('metalness' in m)m.metalness=Math.min(m.metalness,.3);if(m.color)m.color.set(0xa9bfdc)})});
+ship.traverse(o=>{if(o.isMesh)[].concat(o.material).forEach(m=>{m.envMapIntensity=.7})});
+const lamp=new THREE.PointLight(0xbcd4ff,2.2,0,1);cam.add(lamp);lamp.visible=false;
+const lampC=new THREE.PointLight(0x20c8ff,6,0,1.6);lampC.position.set(0,.3,-5);cam.add(lampC);lampC.visible=false;
+const lampA=new THREE.PointLight(0xff9a3c,5,0,1.6);lampA.position.set(0,-.2,4);cam.add(lampA);lampA.visible=false;
+
+/* speed streaks, child of camera */
+const N=2200,pa=new Float32Array(N*6),ea=new Float32Array(N*2);
+for(let i=0;i<N;i++){const r=2.5+Math.pow(Math.random(),.8)*70,a=Math.random()*6.283,x=Math.cos(a)*r,y=Math.sin(a)*r,z=-Math.random()*200;
+ pa.set([x,y,z,x,y,z],i*6);ea[i*2+1]=1}
+const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(pa,3));sg.setAttribute('e',new THREE.BufferAttribute(ea,1));
+const su={uOff:{value:0},uLen:{value:1},uA:{value:0}};
+const streaks=new THREE.LineSegments(sg,new THREE.ShaderMaterial({uniforms:su,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+ vertexShader:`uniform float uOff,uLen,uA;attribute float e;varying float v;void main(){float z=mod(position.z+uOff,200.)-200.;v=(1.+z/200.)*uA*(1.-e*.9);gl_Position=projectionMatrix*modelViewMatrix*vec4(position.xy,z-e*uLen,1.);}`,
+ fragmentShader:`varying float v;void main(){gl_FragColor=vec4(vec3(.75,.85,1.)*v,v);}`}));
+streaks.frustumCulled=false;cam.add(streaks);
+
+/* the discovered planet */
+const planet=new THREE.Mesh(new THREE.SphereGeometry(1,64,64),new THREE.ShaderMaterial({
+ vertexShader:`varying vec3 vN,vP;void main(){vN=normalize(normalMatrix*normal);vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+ fragmentShader:`varying vec3 vN,vP;
+ float h(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+ float n(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);}
+ float fbm(vec3 p){float s=0.,a=.5;for(int i=0;i<5;i++){s+=a*n(p);p*=2.;a*=.5;}return s;}
+ void main(){float t=fbm(vP*3.);vec3 c=mix(vec3(.04,.18,.22),vec3(.78,.5,.28),smoothstep(.45,.6,t));c=mix(c,vec3(.95,.92,.85),smoothstep(.74,.82,t));
+ vec3 N=normalize(vN);float d=max(dot(N,normalize(vec3(.7,.35,.6))),0.);float r=pow(1.-max(N.z,0.),3.);
+ gl_FragColor=vec4(c*(.06+d*1.15)+vec3(.35,.7,1.)*r*(.25+d*.8),1.);}`}));
+planet.visible=false;scene.add(planet);
+
+/* scroll -> beat position b (0..12) */
+const secs=[...document.querySelectorAll('.beat')],copies=secs.map(s=>s.firstElementChild);
+function beatPos(){const vh=innerHeight,m=vh/2;let b=0;
+ secs.forEach((s,i)=>{const r=s.getBoundingClientRect();if(r.top<=m)b=r.bottom>m?i+(m-r.top)/r.height:i+1});return b}
+const KEYS=[[0,0],[1.2,.05],[2.9,.9],[3.0,.5],[4.1,.25],[5,.3],[7,.95],[11,.95],[12,.1]];
+const keyval=b=>{for(let i=1;i<KEYS.length;i++)if(b<=KEYS[i][0]){const[a0,v0]=KEYS[i-1],[a1,v1]=KEYS[i];return lerp(v0,v1,sm(a0,a1,b))}return KEYS.at(-1)[1]};
+
+document.querySelectorAll('[data-go]').forEach(btn=>btn.onclick=()=>{const s=secs[+btn.dataset.go];scrollTo({top:s.offsetTop+s.offsetHeight*.3,behavior:'smooth'})});
+let down=false,px=0,py=0,dragYaw=0,dragPitch=0,zoom=1,zoomT=1,pd=0;const ptrs=new Map();document.body.style.cursor='grab';
+addEventListener('pointerdown',e=>{if(e.target.closest('button,a'))return;ptrs.set(e.pointerId,[e.clientX,e.clientY]);down=true;px=e.clientX;py=e.clientY;
+ if(ptrs.size===2){const[a,b]=[...ptrs.values()];pd=Math.hypot(a[0]-b[0],a[1]-b[1])}document.body.style.cursor='grabbing'});
+const up=e=>{ptrs.delete(e.pointerId);if(!ptrs.size){down=false;document.body.style.cursor='grab'}else{const p=[...ptrs.values()][0];px=p[0];py=p[1]}};
+addEventListener('pointerup',up);addEventListener('pointercancel',up);
+addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){mx=e.clientX/innerWidth*2-1;my=e.clientY/innerHeight*2-1}
+ if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+ if(ptrs.size===2){const[a,b]=[...ptrs.values()],dd=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pd)zoomT=clamp(zoomT*dd/pd,.6,3.5);pd=dd;return}
+ dragYaw=clamp(dragYaw+(e.clientX-px)*.004,-3,3);dragPitch=clamp(dragPitch+(e.clientY-py)*.004,-1.1,1.1);px=e.clientX;py=e.clientY});
+addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();zoomT=clamp(zoomT*Math.exp(-e.deltaY*.01),.6,3.5)}},{passive:false});
+document.body.style.touchAction='pan-y';
+let mx=0,my=0,sx=0,sy=0,cb=0,off=0,last=performance.now(),flashV=0;
+
+/* tuning mode */
+const hud=$('#hud');let tune=false;
+const showHud=()=>{hud.textContent=`TUNE  y: rotate ship 90°   c: rotate cockpit 90°\narrows/PgUp/PgDn: move pilot eye   [ ]: rear entry height\nv: flip corridor direction   - =: corridor camera height\n,/.: cockpit entry pull-back distance\n\nconst CFG=${JSON.stringify(CFG)}`};
+addEventListener('keydown',e=>{const k=e.key;if(k==='t'||k==='T'){tune=!tune;hud.style.display=tune?'block':'none';showHud()}if(!tune)return;
+ const st=.04;if(k==='y')CFG.shipYaw+=Math.PI/2;if(k==='c')CFG.cockpitYaw+=Math.PI/2;
+ if(k==='ArrowUp')CFG.eye[2]-=st;if(k==='ArrowDown')CFG.eye[2]+=st;if(k==='ArrowLeft')CFG.eye[0]-=st;if(k==='ArrowRight')CFG.eye[0]+=st;
+ if(k==='PageUp')CFG.eye[1]+=st;if(k==='PageDown')CFG.eye[1]-=st;if(k==='v'){CFG.corridorRev=!CFG.corridorRev;placeCorridor()}if(k==='-'){CFG.corridorEye-=.03;placeCorridor()}if(k==='=')   {CFG.corridorEye+=.03;placeCorridor()}if(k===',')CFG.enter[2]=Math.max(0,CFG.enter[2]-.1);if(k==='.')CFG.enter[2]+=.1;if(k==='[')CFG.rear[1]-=.05;if(k===']')CFG.rear[1]+=.05;
+ S.set(...CFG.canopy);R.set(...CFG.rear);placeCockpit();
+ showHud();});
+
+function resize(){renderer.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+
+function fade(m,v){if(m.v===v)return;m.v=v;m.w.traverse(o=>{if(o.isMesh&&o.material){const ms=[].concat(o.material);ms.forEach(t=>{if(t.userData.t0===undefined){t.userData.t0=t.transparent;t.userData.d0=t.depthWrite}
+ t.transparent=v<.999?true:t.userData.t0;t.opacity=v;t.needsUpdate=true;t.depthWrite=v<.999?false:t.userData.d0;})}})}
+const tmp=new THREE.Vector3(),look=new THREE.Vector3(),origin=new THREE.Vector3();
+function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;
+ const tb=beatPos();const db=tb-cb;cb+=db*(reduce?1:1-Math.exp(-dt*5));const b=cb;
+ /* text */
+ const vh=innerHeight;secs.forEach((s,i)=>{const r=s.getBoundingClientRect(),f=(vh/2-r.top)/r.height,c=copies[i];
+  const op=clamp(Math.min(sm(.02,.2,f),1-sm(.8,.98,f))*(f<-.1||f>1.1?0:1));c.style.opacity=op;c.style.transform=`translateY(${(.5-f)*30}px)`;c.classList.toggle('on',op>.5)});
+ /* camera: phase 0 ship exterior, 1 corridor, 2 cockpit, with black dips between */
+ const sw1=3.0,sw2=4.0,ph_=b<sw1?0:b<sw2?1:2;
+ const tEnt=clamp((b-sw2)/CFG.enterLen),ee=1-Math.pow(1-tEnt,3);
+ sh.w.visible=ph_===0;tout.visible=ph_===1;ck.w.visible=ph_===2;lamp.visible=lampC.visible=lampA.visible=ph_===1;
+ {const cor=ph_===1;hemi.intensity=cor?.2:1.1;key.intensity=cor?.25:2.6;rim.intensity=cor?.2:1.6;renderer.toneMappingExposure=cor?.8:1}
+ if(ph_===0){const ap=sm(1.2,2.9,b),d=lerp(lerp(16,10,sm(0,1.2,b)),0,Math.pow(ap,1.5)),
+   th=lerp(.8,0,sm(.3,2.7,b))+Math.sin(now*3e-4)*.04*(1-ap),ph=lerp(.3,0,sm(.6,2.8,b));
+  tmp.set(Math.sin(th)*Math.cos(ph),Math.sin(ph),Math.cos(th)*Math.cos(ph)).multiplyScalar(d).add(R);cam.position.copy(tmp);
+  look.set(0,.4,0).lerp(tmp.set(R.x,R.y,R.z-10),sm(1.8,2.85,b));cam.lookAt(look);
+  sh.w.rotation.z=Math.sin(now*4e-4)*.02;mixer.update(dt);
+ }else if(ph_===1){const u=clamp((b-sw1-.04)/(sw2-sw1-.08));cam.position.lerpVectors(cA,cB,u);look.copy(cB).sub(cA).normalize().add(cam.position);cam.lookAt(look)}
+ else{/* cockpit reveal: pulled back + above the seat, scroll dollies in to the pilot's eye */
+  const k=1-ee;
+  cam.position.set(S.x+CFG.enter[0]*k,S.y+CFG.enter[1]*k,S.z+CFG.enter[2]*k);
+  cam.lookAt(cam.position.x,S.y-.18*k,cam.position.z-10)}
+ /* look around: hover (mouse) or drag / touch-drag, eased back when released */
+ const kk=1-Math.exp(-dt*4);sx+=(mx-sx)*kk;sy+=(my-sy)*kk;
+ if(!down){const r=Math.exp(-dt*.5);dragYaw*=r;dragPitch*=r}
+ const fr=ph_===0?sm(1,2.4,b):1,g=lerp(1.8,.3,fr),dg=lerp(1,.2,fr);
+ zoom+=(zoomT-zoom)*kk;if(b>2.4)zoomT=1;
+ cam.rotateY(-sx*.3*g+dragYaw*dg);cam.rotateX(-sy*.18*g+dragPitch*dg);
+ /* flash on swap */
+ flashV=Math.max(1-sm(.05,.3,Math.abs(b-sw1)),1-sm(.05,.3,Math.abs(b-sw2)));$('#flash').style.opacity=flashV;const fv=(ph_===2?lerp(64,76,ee):60)/(ph_===0?lerp(zoom,1,sm(1,2.4,b)):1);if(Math.abs(cam.fov-fv)>.01){cam.fov=fv;cam.updateProjectionMatrix()}
+ /* streaks */
+ const a=keyval(b);su.uA.value=ph_===1?0:a;su.uLen.value=.4+a*a*26;off+=((.5+a*a*(reduce?20:90))+Math.abs(db)*(reduce?0:260))*dt;su.uOff.value=off;
+ /* planet + dome */
+ planet.visible=b>6.2;
+ if(planet.visible){const z=lerp(lerp(-1500,-520,sm(6.5,11,b)),-150,sm(11,12,b));planet.position.set(S.x+lerp(140,0,sm(7,12,b)),S.y+lerp(30,0,sm(7,12,b)),S.z+z);planet.scale.setScalar(60);planet.rotation.y=now*1e-5*0+b*.05}
+ dome.position.copy(cam.position);dome.rotation.y=b*.035+now*5e-6;dome.rotation.x=b*.01;
+ renderer.render(scene,cam)}
+$('#loader').style.opacity=0;setTimeout(()=>$('#loader').remove(),1000);
+requestAnimationFrame(frame);
+</script></body></html>
